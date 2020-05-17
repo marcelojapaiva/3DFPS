@@ -7,6 +7,9 @@ public class Controle : MonoBehaviour
    [SerializeField] private float vel = 6;
    [SerializeField] private float velRot = 100;
    [SerializeField] private Animator heroAnimator;
+
+    //IK - Alvo para olhar.
+   [SerializeField] private Transform alvo;
    
 
     // Update is called once per frame
@@ -28,5 +31,21 @@ public class Controle : MonoBehaviour
             heroAnimator.SetBool("Andar",false);
         }
         
+    }
+
+    //IK Instancia
+    private void OnAnimatorIK(int layerIndex)
+    {
+        //Cabeça Olhar para o transform.
+        heroAnimator.SetLookAtWeight(1);
+        heroAnimator.SetLookAtPosition(alvo.position);
+    
+        //Braço aponta para o transform
+        heroAnimator.SetIKPositionWeight(AvatarIKGoal.LeftHand,1);
+        heroAnimator.SetIKPosition(AvatarIKGoal.LeftHand,alvo.position);
+        
+        //Perna aponta para o transform
+        heroAnimator.SetIKPositionWeight(AvatarIKGoal.LeftFoot,1);
+        heroAnimator.SetIKPosition(AvatarIKGoal.LeftFoot,alvo.position);
     }
 }
