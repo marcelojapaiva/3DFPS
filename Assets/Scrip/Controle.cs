@@ -9,21 +9,60 @@ public class Controle : MonoBehaviour
    [SerializeField] private Animator heroAnimator;
 
     //IK - Alvo para olhar.
-   [SerializeField] private Transform alvo;
+   //[SerializeField] private Transform alvo;
    
    //Trigger animação de morto
-   [SerializeField] private bool estaMorto = false;
+   private bool estaMorto = false;
+   private bool flag;
 
+   //Pendurar variaveis
+    private bool estaPendurando = false;
+    private Transform alvoPendurar;
+
+    void Start()
+    {
+        alvoPendurar = null;
+        flag = true;
+    }
+
+    void FixedUpdate()
+    {
+        if(!alvoPendurar)return;
+        if(estaPendurando && flag)
+        {
+            transform.position = alvoPendurar.position;
+            flag = false;
+        }
+        
+    }
     // Update is called once per frame
     void Update()
     {
-        float move = Input.GetAxis("Vertical") * vel;
+        float move = Input.GetAxis("Vertical");
         float rotacao = Input.GetAxis("Horizontal") * velRot;
 
-        move *= Time.deltaTime;
-        rotacao *= Time.deltaTime;
+        
 
-        if(!estaMorto){transform.Rotate(0,rotacao,0);}
+        if(!estaMorto && !estaPendurando)
+        {
+            rotacao *= Time.deltaTime;
+            transform.Rotate(0,rotacao,0);
+        }
+
+        if(estaPendurando)
+        {
+            if(rotacao > 1)
+            {
+                heroAnimator.SetBool("PenduradoDir",true);
+            }else if(rotacao < -1)
+            {
+                heroAnimator.SetBool("PenduradoEsc",true);
+            }else
+            {
+                heroAnimator.SetBool("PenduradoDir",false);
+                heroAnimator.SetBool("PenduradoEsc",false);
+            }
+        }
         
         if(move != 0)
         {
@@ -33,13 +72,29 @@ public class Controle : MonoBehaviour
             heroAnimator.SetBool("Andar",false);
         }
 
-        if(estaMorto && Input.GetKeyDown(KeyCode.Space))
+        if(estaMorto && Input.GetKeyDown(KeyCode.Q))
         {
             heroAnimator.SetTrigger("Levantar");
             estaMorto = false;
         }   
+         if(Input.GetKeyDown(KeyCode.Space))
+        {
+            heroAnimator.SetTrigger("Pular");
+        }   
     }
-    //
+
+    //Pendurar na barra
+    public void Pendurado(Transform alv)
+    {
+        if(estaPendurando)return;
+        heroAnimator.SetTrigger("Agarrar");
+        GetComponent<Rigidbody>().isKinematic = true;
+        estaPendurando = true;
+        alvoPendurar = alv;
+    }
+
+
+    //Trigger morte
     void OnTriggerEnter(Collider col)
     {
         if(col.gameObject.CompareTag("Enemy"))
