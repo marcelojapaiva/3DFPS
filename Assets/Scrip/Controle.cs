@@ -11,6 +11,8 @@ public class Controle : MonoBehaviour
     //IK - Alvo para olhar.
    [SerializeField] private Transform alvo;
    
+   //Trigger animação de morto
+   [SerializeField] private bool estaMorto = false;
 
     // Update is called once per frame
     void Update()
@@ -21,8 +23,8 @@ public class Controle : MonoBehaviour
         move *= Time.deltaTime;
         rotacao *= Time.deltaTime;
 
-        transform.Rotate(0,rotacao,0);
-
+        if(!estaMorto){transform.Rotate(0,rotacao,0);}
+        
         if(move != 0)
         {
             heroAnimator.SetBool("Andar",true);
@@ -30,11 +32,25 @@ public class Controle : MonoBehaviour
         {
             heroAnimator.SetBool("Andar",false);
         }
-        
+
+        if(estaMorto && Input.GetKeyDown(KeyCode.Space))
+        {
+            heroAnimator.SetTrigger("Levantar");
+            estaMorto = false;
+        }   
+    }
+    //
+    void OnTriggerEnter(Collider col)
+    {
+        if(col.gameObject.CompareTag("Enemy"))
+        {
+            heroAnimator.SetTrigger("Morte");
+            estaMorto = true;
+        }
     }
 
     //IK Instancia
-    private void OnAnimatorIK(int layerIndex)
+   /*  private void OnAnimatorIK(int layerIndex)
     {
         //Cabeça Olhar para o transform.
         heroAnimator.SetLookAtWeight(1);
@@ -47,5 +63,5 @@ public class Controle : MonoBehaviour
         //Perna aponta para o transform
         heroAnimator.SetIKPositionWeight(AvatarIKGoal.LeftFoot,1);
         heroAnimator.SetIKPosition(AvatarIKGoal.LeftFoot,alvo.position);
-    }
+    } */
 }
