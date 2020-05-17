@@ -12,12 +12,13 @@ public class Controle : MonoBehaviour
    //[SerializeField] private Transform alvo;
    
    //Trigger animação de morto
-   private bool estaMorto = false;
-   private bool flag;
+   [SerializeField]private bool estaMorto = false;
+   [SerializeField]private bool flag;
 
    //Pendurar variaveis
-    private bool estaPendurando = false;
-    private Transform alvoPendurar;
+    [SerializeField]private bool estaPendurando = false;
+   [SerializeField] private Transform alvoPendurar;
+    public Transform parede;
 
     void Start()
     {
@@ -30,10 +31,17 @@ public class Controle : MonoBehaviour
         if(!alvoPendurar)return;
         if(estaPendurando && flag)
         {
-            transform.position = alvoPendurar.position;
+            transform.position = new Vector3(transform.position.x,alvoPendurar.position.y,alvoPendurar.position.z);
             flag = false;
         }
         
+    }
+    void AjustaPosicao()
+    {
+        if(Vector3.Distance(transform.position,parede.position)<= 3.1f)
+        {
+            transform.rotation = Quaternion.Lerp(transform.rotation, parede.rotation,1);
+        }
     }
     // Update is called once per frame
     void Update()
@@ -63,7 +71,8 @@ public class Controle : MonoBehaviour
                 heroAnimator.SetBool("PenduradoEsc",false);
             }
         }
-        
+
+        //Andar
         if(move != 0)
         {
             heroAnimator.SetBool("Andar",true);
@@ -72,15 +81,25 @@ public class Controle : MonoBehaviour
             heroAnimator.SetBool("Andar",false);
         }
 
+        //ação de levantar caso esteja morto
         if(estaMorto && Input.GetKeyDown(KeyCode.Q))
         {
             heroAnimator.SetTrigger("Levantar");
             estaMorto = false;
         }   
+
+        //ação para pular
          if(Input.GetKeyDown(KeyCode.Space))
         {
+            AjustaPosicao();
             heroAnimator.SetTrigger("Pular");
         }   
+
+        //subir na barra
+        if(Input.GetKeyDown(KeyCode.Z) && estaPendurando)
+        {
+            StartCoroutine("Subindo");
+        }  
     }
 
     //Pendurar na barra
@@ -102,6 +121,16 @@ public class Controle : MonoBehaviour
             heroAnimator.SetTrigger("Morte");
             estaMorto = true;
         }
+    }
+
+    //Corotina para escalar
+    IEnumerator Subindo()
+    {
+        heroAnimator.SetTrigger("Subindo");
+        yield return new WaitForSeconds(3.24f);
+        estaPendurando = false;
+        flag = true;
+        GetComponent<Rigidbody>().isKinematic = false;
     }
 
     //IK Instancia
